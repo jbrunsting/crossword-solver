@@ -57,3 +57,84 @@ class CrosswordLine(object):
         self.direction = direction
         self.intersection_points = intersection_points
         
+class CoordMap(object):
+    
+    def __init__(self):
+        self._coord_map = {}
+        self._x_shift = 0
+        self._y_shift = 0
+    
+    def set_val(self, x, y, val):
+        x = x - self._x_shift
+        y = y - self._y_shift
+        if x in self._coord_map:
+            self._coord_map[x][y] = val
+        else:
+            self._coord_map[x] = {y : val}
+    
+    def get_val(self, x, y):
+        x = x - self._x_shift
+        y = y - self._y_shift
+        if x in self._coord_map and y in self._coord_map[x]:
+            return self._coord_map[x][y]
+        else:
+            return None
+    
+    def get_min_x(self):
+        keys = self._coord_map.keys()
+        if keys:
+            return min(self._coord_map.keys()) + self._x_shift
+        else:
+            return None
+    
+    def get_min_y(self):
+        min_val = None
+        for row in self._coord_map.values():
+            row_min = min(row.keys())
+            if min_val == None or min_val > row_min:
+                min_val = row_min
+        
+        if min_val == None:
+            return None
+        else:
+            return min_val + self._y_shift
+    
+    def get_max_x(self):
+        keys = self._coord_map.keys()
+        if keys:
+            return max(self._coord_map.keys()) + self._x_shift
+        else:
+            return None
+    
+    def get_max_y(self):
+        max_val = None
+        for row in self._coord_map.values():
+            row_max = max(row.keys())
+            if max_val == None or max_val < row_max:
+                max_val = row_max
+        
+        if max_val == None:
+            return None
+        else:
+            return max_val + self._y_shift
+    
+    def shift_x(self, shift):
+        self._x_shift = shift
+    
+    def shift_y(self, shift):
+        self._y_shift = shift
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
