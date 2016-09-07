@@ -73,10 +73,22 @@ def print_puzzle(puzzle):
 # internal
 
 def print_coord_map(coordmap, border, empty_char):
-    coordmap.shift_x(-coordmap.get_min_x())
-    coordmap.shift_y(-coordmap.get_min_y())
-    map_width = coordmap.get_max_x() + 1
-    map_height = coordmap.get_max_y() + 1
+    minx = coordmap.get_min_x()
+    miny = coordmap.get_min_y()
+    maxx = coordmap.get_max_x()
+    maxy = coordmap.get_max_y()
+    
+    if minx == None or maxx == None:
+        minx = 0
+        maxx = 0
+    if miny == None or maxy == None:
+        miny = 0
+        maxy = 0
+    
+    coordmap.shift_x(-minx)
+    coordmap.shift_y(-miny)
+    map_width = maxx + 1
+    map_height = maxy + 1
     for y in range(map_height + 2 * border):
         for x in range(map_width + 2 * border):
             if (x < border or y < border or 

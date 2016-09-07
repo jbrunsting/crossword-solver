@@ -6,6 +6,7 @@ Created on Sep 6, 2016
 
 import crossword_tools
 import constants
+import crossword_gui
 
 # Yea, your gonna have to improve these alot
 
@@ -15,6 +16,12 @@ puzzle = crossword_tools.Puzzle()
 # TODO: follow the actual crossword format, with the same number having across
 # and down values
 def configure_puzzle():
+    def on_puzzle_retrieval(puzzle):
+        print(constants.PRINTING_PUZZLE)
+        crossword_tools.print_puzzle(puzzle)
+    
+    puzzle = crossword_gui.get_user_generated_crossword(10, 10, on_puzzle_retrieval)
+    """
     remaining_lines = read_int(constants.LINE_COUNT_STR)
     current_line = 0
     
@@ -49,10 +56,8 @@ def configure_puzzle():
         
         puzzle.add_line(line_length, line_dir, intersections, line_id)
         
-        current_line = current_line + 1
-    
-    print(constants.PRINTING_PUZZLE)
-    crossword_tools.print_puzzle(puzzle)
+        current_line = current_line + 1"""
+
         
 
 
