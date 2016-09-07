@@ -12,3 +12,4 @@ SECOND_LINE_INTERSECT_POS =      ("Enter the position in the intersecting line "
                                   "that the intersection occurs at: ")
 INTERSECTION_RECORDED =          ("That intersection point has already been "
                                   "recorded, skipping")
+PRINTING_PUZZLE =                ("This is what the puzzle looks like: ")

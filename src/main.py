@@ -12,6 +12,8 @@ import constants
 puzzle = crossword_tools.Puzzle()
 
 # TODO: account for incorrect input, and allow re-starting and stuff
+# TODO: follow the actual crossword format, with the same number having across
+# and down values
 def configure_puzzle():
     remaining_lines = read_int(constants.LINE_COUNT_STR)
     current_line = 0
@@ -33,7 +35,7 @@ def configure_puzzle():
             
             if intersected_line_id < line_id:
                 print(constants.INTERSECTION_RECORDED)
-                current_line = current_line + 1
+                intersects_to_read = intersects_to_read - 1;
                 continue
             
             first_line_intersection = read_int(constants.FIRST_LINE_INTERSECT_POS) - 1
@@ -48,6 +50,9 @@ def configure_puzzle():
         puzzle.add_line(line_length, line_dir, intersections, line_id)
         
         current_line = current_line + 1
+    
+    print(constants.PRINTING_PUZZLE)
+    crossword_tools.print_puzzle(puzzle)
         
 
 
