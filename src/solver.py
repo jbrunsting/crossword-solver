@@ -58,7 +58,7 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
                 new_fitting_words[intersect.second_id].remove(word)
                 
         if not new_fitting_words[intersect.second_id]:
-            current_solution[line_id] = None
+            del current_solution[line_id]
             return
     
     solved_ids = current_solution.keys()
@@ -68,18 +68,19 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
     # if there are no more id's to check, meaning everything has been filled
     if not possible_ids:
         solution_set.append(copy.copy(current_solution))
-        current_solution[line_id] = None
+        del current_solution[line_id]
         return
     
     target_id = get_optimal_guess_line(possible_ids, new_fitting_words)
     
     for possible_word in new_fitting_words[target_id]:
-        guess_word(puzzle, target_id, possible_word, new_fitting_words, current_solution, solution_set)
+        if possible_word not in current_solution.values():
+            guess_word(puzzle, target_id, possible_word, new_fitting_words, current_solution, solution_set)
     
     # it is important to reset this value, so that after we have guessed, we are
     # able to guess different values without the parent functions getting all
     # mad and stuff cause they think the spot is already filled
-    current_solution[line_id] = None
+    del current_solution[line_id]
     
 def get_optimal_guess_line(id_list, fitting_words):
     if not id_list:

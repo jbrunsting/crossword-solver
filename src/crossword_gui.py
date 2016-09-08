@@ -1,5 +1,6 @@
 import crossword_tools
 import tkinter
+import copy
 
 # callback must take a puzzle as an argument
 def get_user_generated_crossword(canvas_width, canvas_height, callback):
@@ -32,13 +33,13 @@ def get_user_generated_crossword(canvas_width, canvas_height, callback):
                          command=on_enter_click)
     enter.grid(row=(r + 1), column=0, columnspan=canvas_width)
     root.mainloop()
-
+    
 def get_puzzle_from_selected_tile_map(coordmap):
     puzzle = crossword_tools.Puzzle()
     rows = [] # list of tuples, each of the form (x, y, length, direction)
     
-    width = coordmap.get_max_x()
-    height = coordmap.get_max_y()
+    width = coordmap.get_max_x() + 1
+    height = coordmap.get_max_y() + 1
 
     # TODO: Kill this repetition
     # extract horizontal words
@@ -124,16 +125,47 @@ def get_puzzle_from_selected_tile_map(coordmap):
         puzzle.add_line(length, dir, intersections, i)
      
     return puzzle       
+
+# position with the corresponding ID
+def print_puzzle(puzzle, solution_set):   
+    for i in range(len(solution_set)): 
+        lines = copy.deepcopy(puzzle.lines)
+        if not lines:
+            return
+        
+        print("Solution " + str(i) + " is:")
+        while lines.keys():
+            print_values_map = crossword_tools.CoordMap()
+            current_key = list(lines.keys())[0]
+            lines = crossword_tools.add_line_and_decendents_to_coordmap(print_values_map, 0, 0, current_key, lines, solution_set[i])
+            print_coord_map(print_values_map, 1, ' ')
+
+
+def print_coord_map(coordmap, border, empty_char):
+    minx = coordmap.get_min_x()
+    miny = coordmap.get_min_y()
+    maxx = coordmap.get_max_x()
+    maxy = coordmap.get_max_y()
     
+    if minx == None or maxx == None or miny == None or maxy == None:
+        return;
     
+    coordmap.shift_x(-minx)
+    coordmap.shift_y(-miny)
     
+    maxx = maxx - minx
+    maxy = maxy - miny
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    print("maxx and maxy are " + str(maxx) + ", " + str(maxy))
+    for y in range(maxy + 1 + 2 * border):
+        for x in range(maxx + 1 + 2 * border):
+            if (x < border or y < border or 
+                x > maxx + border or y > maxy + border):
+                print(empty_char, end="")
+            else:
+                val = coordmap.get_val(x - border, y - border)
+                if val == None:
+                    print(empty_char, end="")
+                else:
+                    print(val, end="")
+        print("")

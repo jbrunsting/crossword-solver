@@ -30,8 +30,13 @@ def configure_puzzle():
         solutions = solver.solve(puzzle, word_bank)
         
         print("done solving")
-        for solution in solutions:
-            print("Solution: " + str(solution))
+        if solutions:
+            for solution in solutions:
+                print("Solution: " + str(solution))
+            print("Graphical:")
+            crossword_gui.print_puzzle(puzzle, solutions)
+        else:
+            print("NO SOLUTIONS FOUND")
     
     width = read_int(constants.PUZZLE_WIDTH_STR)
     height = read_int(constants.PUZZLE_HEIGHT_STR)

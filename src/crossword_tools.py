@@ -53,11 +53,7 @@ class Puzzle(object):
 
 # TODO: Allow for a solutions field, that takes each word and puts it in the 
 # position with the corresponding ID
-def print_puzzle(puzzle):
-    FILLED = '#'
-    
-    standalone_lines = []
-    
+def print_puzzle(puzzle):    
     lines = copy.deepcopy(puzzle.lines)
     if not lines:
         return
@@ -65,8 +61,7 @@ def print_puzzle(puzzle):
     while lines.keys():
         print_values_map = CoordMap()
         current_key = list(lines.keys())[0]
-        current_val = lines[current_key]
-        lines = add_line_to_coordmap(print_values_map, 0, 0, current_val, current_key, lines)
+        lines = add_line_and_decendents_to_coordmap(print_values_map, 0, 0, current_key, lines)
         print_coord_map(print_values_map, 1, ' ')
 
 
@@ -85,8 +80,9 @@ def print_coord_map(coordmap, border, empty_char):
     maxx = maxx - minx
     maxy = maxy - miny
     
-    for y in range(maxy + 2 * border):
-        for x in range(maxx + 2 * border):
+    print("maxx and maxy are " + str(maxx) + ", " + str(maxy))
+    for y in range(maxy + 1 + 2 * border):
+        for x in range(maxx + 1 + 2 * border):
             if (x < border or y < border or 
                 x > maxx + border or y > maxy + border):
                 print(empty_char, end="")
@@ -99,11 +95,14 @@ def print_coord_map(coordmap, border, empty_char):
         print("")
 
 # returns the list of lines with the lines that were added removed
-def add_line_to_coordmap(coordmap, x, y, line, line_id, lines):
-    FILLED = '#'
+def add_line_and_decendents_to_coordmap(coordmap, x, y, line_id, lines, line_solutions = None):    
+    line = lines[line_id]
     
-    print_line = [FILLED for i in range(line.length)]
-    coordmap.add_line(line.direction, x, y, print_line)
+    if line_solutions and line_id in line_solutions:
+        line_string = line_solutions[line_id]
+    else:
+        line_string = ['#' for x in range(line.length)]
+    coordmap.add_line(line.direction, x, y, line_string)
     
     line_intersection_points = line.intersection_points
     line_direction = line.direction
@@ -131,7 +130,7 @@ def add_line_to_coordmap(coordmap, x, y, line, line_id, lines):
         else:
             newline_x = newline_x - intersection.second_intersect
         
-        lines = add_line_to_coordmap(coordmap, newline_x, newline_y, intersected_line, intersected_id, lines)
+        lines = add_line_and_decendents_to_coordmap(coordmap, newline_x, newline_y, intersected_id, lines, line_solutions)
     
     return lines
 
