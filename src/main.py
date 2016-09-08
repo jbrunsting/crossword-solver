@@ -7,6 +7,7 @@ Created on Sep 6, 2016
 import crossword_tools
 import constants
 import crossword_gui
+import solver
 
 # Yea, your gonna have to improve these alot
 
@@ -19,43 +20,22 @@ def configure_puzzle():
     def on_puzzle_retrieval(puzzle):
         print(constants.PRINTING_PUZZLE)
         crossword_tools.print_puzzle(puzzle)
+        word_bank = []
+        while True:
+            user_input = input(constants.WORD_BANK_ENTRY_STR)
+            if user_input == "q":
+                break
+            word_bank.append(user_input)
+        
+        solutions = solver.solve(puzzle, word_bank)
+        
+        print("done solving")
+        for solution in solutions:
+            print("Solution: " + str(solution))
     
-    puzzle = crossword_gui.get_user_generated_crossword(10, 10, on_puzzle_retrieval)
-    """
-    remaining_lines = read_int(constants.LINE_COUNT_STR)
-    current_line = 0
-    
-    while current_line < remaining_lines:
-        length_message = (constants.LINE_LENGTH_STR).format(str(current_line + 1))
-        line_length = read_int(length_message)
-        dir_message = (constants.LINE_DIR_STR).format(
-            crossword_tools.Puzzle.LINE_DIR_DOWN, 
-            crossword_tools.Puzzle.LINE_DIR_RIGHT)
-        line_dir = read_int(dir_message)
-        line_id = current_line
-        intersections = []
-        
-        intersects_to_read = read_int(constants.INTERSECT_COUNT_STR)
-        while intersects_to_read > 0:
-            # subtract one because users are 1-based and we are 0-based
-            intersected_line_id = read_int(constants.INTERSECTED_LINE_ID_STR) - 1;
-            
-            first_line_intersection = read_int(constants.FIRST_LINE_INTERSECT_POS) - 1
-            second_line_intersection = read_int(constants.SECOND_LINE_INTERSECT_POS) - 1
-            intersection = crossword_tools.Puzzle.IntersectionPoint(
-                               line_id, intersected_line_id, 
-                               first_line_intersection, 
-                               second_line_intersection)
-            intersections.append(intersection)
-            intersects_to_read = intersects_to_read - 1;
-        
-        puzzle.add_line(line_length, line_dir, intersections, line_id)
-        
-        current_line = current_line + 1"""
-
-        
-
-
+    width = read_int(constants.PUZZLE_WIDTH_STR)
+    height = read_int(constants.PUZZLE_HEIGHT_STR)
+    crossword_gui.get_user_generated_crossword(width, height, on_puzzle_retrieval)
 
 def read_int(message):
     return int(input(message))

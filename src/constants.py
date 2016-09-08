@@ -1,15 +1,6 @@
 
-LINE_COUNT_STR =                 ("Enter the number of words in the puzzle: ")
-LINE_LENGTH_STR =                ("Enter the length of line {}: ")
-LINE_DIR_STR =                   ("Enter the direction of the line ({} "
-                                         "for up/down, {} for left/right): ")
-INTERSECT_COUNT_STR =            ("Enter the number of places the line "
-                                         "intersects with another one: ")
-INTERSECTED_LINE_ID_STR =        ("Enter the number of an intersected line: ")
-FIRST_LINE_INTERSECT_POS =       ("Enter the position in the current line that "
-                                  "the intersection occurs at: ")
-SECOND_LINE_INTERSECT_POS =      ("Enter the position in the intersecting line "
-                                  "that the intersection occurs at: ")
-INTERSECTION_RECORDED =          ("That intersection point has already been "
-                                  "recorded, skipping")
-PRINTING_PUZZLE =                ("This is what the puzzle looks like: ")
+PUZZLE_WIDTH_STR =    ("Enter the width of the puzzle: ")
+PUZZLE_HEIGHT_STR =   ("Enter the height of the puzzle: ")
+WORD_BANK_ENTRY_STR = ("Enter a word in the word bank, or enter q to " +
+                       "end the word bank generation: ")
+PRINTING_PUZZLE =     ("This is what the puzzle looks like: ")

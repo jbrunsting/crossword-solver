@@ -9,7 +9,6 @@ import copy
 DIR_DOWN = 0
 DIR_RIGHT = 1
 
-# external
 
 class Puzzle(object):   
     LINE_DIR_DOWN = DIR_DOWN
@@ -50,7 +49,7 @@ class Puzzle(object):
         # their intersection points
         def words_fit(self, first_word, second_word):
             return (first_word[self.first_intersect]
-                 == first_word[self.second_intersect])
+                 == second_word[self.second_intersect])
 
 # TODO: Allow for a solutions field, that takes each word and puts it in the 
 # position with the corresponding ID
@@ -70,7 +69,6 @@ def print_puzzle(puzzle):
         lines = add_line_to_coordmap(print_values_map, 0, 0, current_val, current_key, lines)
         print_coord_map(print_values_map, 1, ' ')
 
-# internal
 
 def print_coord_map(coordmap, border, empty_char):
     minx = coordmap.get_min_x()
@@ -221,18 +219,3 @@ class CoordMap(object):
     
     def shift_y(self, shift):
         self._y_shift = self._y_shift + shift
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
