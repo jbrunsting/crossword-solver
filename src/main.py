@@ -40,11 +40,6 @@ def configure_puzzle():
             # subtract one because users are 1-based and we are 0-based
             intersected_line_id = read_int(constants.INTERSECTED_LINE_ID_STR) - 1;
             
-            if intersected_line_id < line_id:
-                print(constants.INTERSECTION_RECORDED)
-                intersects_to_read = intersects_to_read - 1;
-                continue
-            
             first_line_intersection = read_int(constants.FIRST_LINE_INTERSECT_POS) - 1
             second_line_intersection = read_int(constants.SECOND_LINE_INTERSECT_POS) - 1
             intersection = crossword_tools.Puzzle.IntersectionPoint(

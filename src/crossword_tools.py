@@ -78,21 +78,19 @@ def print_coord_map(coordmap, border, empty_char):
     maxx = coordmap.get_max_x()
     maxy = coordmap.get_max_y()
     
-    if minx == None or maxx == None:
-        minx = 0
-        maxx = 0
-    if miny == None or maxy == None:
-        miny = 0
-        maxy = 0
+    if minx == None or maxx == None or miny == None or maxy == None:
+        return;
     
     coordmap.shift_x(-minx)
     coordmap.shift_y(-miny)
-    map_width = maxx + 1
-    map_height = maxy + 1
-    for y in range(map_height + 2 * border):
-        for x in range(map_width + 2 * border):
+    
+    maxx = maxx - minx
+    maxy = maxy - miny
+    
+    for y in range(maxy + 2 * border):
+        for x in range(maxx + 2 * border):
             if (x < border or y < border or 
-                x >= map_width + border or y >= map_height + border):
+                x > maxx + border or y > maxy + border):
                 print(empty_char, end="")
             else:
                 val = coordmap.get_val(x - border, y - border)
@@ -111,6 +109,7 @@ def add_line_to_coordmap(coordmap, x, y, line, line_id, lines):
     
     line_intersection_points = line.intersection_points
     line_direction = line.direction
+    del lines[line_id]
     for intersection in line_intersection_points:
         newline_x = x
         newline_y = y
@@ -132,11 +131,10 @@ def add_line_to_coordmap(coordmap, x, y, line, line_id, lines):
         if intersected_line.direction == Puzzle.LINE_DIR_DOWN:
             newline_y = newline_y - intersection.second_intersect
         else:
-            newline_x = newline_x - intersection.first_intersect
+            newline_x = newline_x - intersection.second_intersect
         
         lines = add_line_to_coordmap(coordmap, newline_x, newline_y, intersected_line, intersected_id, lines)
     
-    del lines[line_id]
     return lines
 
 class CrosswordLine(object):    

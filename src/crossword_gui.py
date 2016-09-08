@@ -7,7 +7,6 @@ def get_user_generated_crossword(canvas_width, canvas_height, callback):
 
     def on_button_click(btn, r, c):
         def fn():
-            print("button at " + str(r) + ", " + str(c) + " clicked")
             if btn.selected:
                 btn.selected = False
                 selected_tile_map.set_val(c, r, False)
@@ -60,6 +59,11 @@ def get_puzzle_from_selected_tile_map(coordmap):
                 current_word_len = -1
             else:
                 current_word_len = -1
+        else:
+            if current_word_len > 1:
+                rows.append((starting_x, starting_y, current_word_len, crossword_tools.Puzzle.LINE_DIR_RIGHT))
+                current_word_len = -1
+            
     
     # extract vertical words
     for x in range(width):
@@ -79,6 +83,10 @@ def get_puzzle_from_selected_tile_map(coordmap):
                 current_word_len = -1
             else:
                 current_word_len = -1
+        else:
+            if current_word_len > 1:
+                rows.append((starting_x, starting_y, current_word_len, crossword_tools.Puzzle.LINE_DIR_DOWN))
+                current_word_len = -1
     
     for i, row in enumerate(rows):
         line_id = i
@@ -93,23 +101,26 @@ def get_puzzle_from_selected_tile_map(coordmap):
             if i2 == i or row2[3] == row[3]:
                 continue
             
-            x2 = row[0]
-            y2 = row[1]
-            length2 = row[2]
+            x2 = row2[0]
+            y2 = row2[1]
+            length2 = row2[2]
             
             # this implies that row2 has direction right
             if dir == crossword_tools.Puzzle.LINE_DIR_DOWN:
                 # if they intersect
                 if x2 <= x and x2 + length2 > x and y <= y2 and y + length > y2:
                     intersect = crossword_tools.Puzzle.IntersectionPoint(i, i2, y2 - y, x - x2)
+                    print("adding intersection at " + str(y2 - y) + " and " +  str(x - x2))
                     intersections.append(intersect)
             # this implies that row2 has direction down
             elif dir == crossword_tools.Puzzle.LINE_DIR_RIGHT:
                 # if they intersect
                 if x <= x2 and x + length > x2 and y2 <= y and y2 + length2 > y:
+                    print("adding intersection at " + str(x2 - x) + " and " +  str(y - y2))
                     intersect = crossword_tools.Puzzle.IntersectionPoint(i, i2, x2 - x, y - y2)
                     intersections.append(intersect)
         
+        print("adding word with length " + str(length) + " and id " + str(i))
         puzzle.add_line(length, dir, intersections, i)
      
     return puzzle       
