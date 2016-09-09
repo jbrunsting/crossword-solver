@@ -124,8 +124,8 @@ def generate_puzzle_from_selected_tile_map(coordmap):
      
     return puzzle    
 
-def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height):
-    MIN_WIDTH = 4
+def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_close):
+    MIN_WIDTH = 6
     BORDER_WIDTH = 1
     
     grid_width = max(max_map_width + 2 * BORDER_WIDTH, MIN_WIDTH)
@@ -166,6 +166,10 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height):
             
         display_coordmap(root, coordmaps[root.current_page])
     
+    def new_puzzle():
+        root.destroy()
+        on_close()
+    
     if not coordmaps:
         return
         
@@ -175,10 +179,13 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height):
     root.current_page = 0
     for x in range(grid_width):
         grid_tiles.append([])
+        root.columnconfigure(x, minsize="30")
         for y in range(grid_height):
-            btn = tkinter.Button(root, borderwidth=1, background="grey")
+            if x == 0:
+                root.rowconfigure(y, minsize="30")
+            btn = tkinter.Label(root, borderwidth=1, font=("Helvetica", 15))
             grid_tiles[x].append(btn)
-            btn.grid(row=y,column=x)
+            btn.grid(row=y, column=x)
 
     if len(coordmaps) == 0:
         next_btn_state = tkinter.DISABLED
@@ -187,18 +194,20 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height):
         
     next_btn = tkinter.Button(root, borderwidth=1, background="grey", text=">", state=next_btn_state)
     prev_btn = tkinter.Button(root, borderwidth=1, background="grey", text="<", state=tkinter.DISABLED)
+    retry_btn = tkinter.Button(root, borderwidth=1, background="grey", text="new puzzle", command=new_puzzle)
     
-    next_btn.configure(command = lambda: next_page(root, next_btn, prev_btn))
-    prev_btn.configure(command = lambda: prev_page(root, next_btn, prev_btn))
+    next_btn.configure(command=lambda: next_page(root, next_btn, prev_btn))
+    prev_btn.configure(command=lambda: prev_page(root, next_btn, prev_btn))
     
-    next_btn.grid(row=(grid_height), column=grid_width - 2, columnspan=2)
-    prev_btn.grid(row=(grid_height), column=0, columnspan=2)
+    next_btn.grid(row=grid_height, column=grid_width - 2, columnspan=2)
+    prev_btn.grid(row=grid_height, column=0, columnspan=2)
+    retry_btn.grid(row=grid_height, column=int(grid_width / 2 - 1), columnspan = 2 + grid_width % 2)
     
     display_coordmap(root, coordmaps[0])
     root.mainloop()
 
 # position with the corresponding ID
-def print_puzzle(puzzle, solution_set):
+def display_puzzle_solutions(puzzle, solution_set, on_close):
     solution_coord_maps = [crossword_tools.CoordMap() for i in range(len(solution_set))]
     lines = copy.deepcopy(puzzle.lines)
     if not lines:
@@ -219,37 +228,8 @@ def print_puzzle(puzzle, solution_set):
         coord_map.shift_x(-coord_map.get_min_x())
         coord_map.shift_y(-coord_map.get_min_y())
     
-    display_coordmaps_on_pages(solution_coord_maps, solution_coord_maps[0].get_max_x() + 1, solution_coord_maps[0].get_max_y() + 1)
+    display_coordmaps_on_pages(solution_coord_maps, solution_coord_maps[0].get_max_x() + 1, solution_coord_maps[0].get_max_y() + 1, on_close)
     
-
-def print_coord_map(coordmap, border, empty_char):
-    minx = coordmap.get_min_x()
-    miny = coordmap.get_min_y()
-    maxx = coordmap.get_max_x()
-    maxy = coordmap.get_max_y()
-    
-    if minx == None or maxx == None or miny == None or maxy == None:
-        return;
-    
-    coordmap.shift_x(-minx)
-    coordmap.shift_y(-miny)
-    
-    maxx = maxx - minx
-    maxy = maxy - miny
-    
-    for y in range(maxy + 1 + 2 * border):
-        for x in range(maxx + 1 + 2 * border):
-            if (x < border or y < border or 
-                x > maxx + border or y > maxy + border):
-                print(empty_char, end="")
-            else:
-                val = coordmap.get_val(x - border, y - border)
-                if val == None:
-                    print(empty_char, end="")
-                else:
-                    print(val, end="")
-        print("")
-
 # returns the list of lines with the lines that were added removed
 # coordmaps is a list of CoordMaps with the same length as line_solutions_by_coordmap
 # line_solutions_by_coordmap is an array of dictionaries where the keys are the

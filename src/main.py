@@ -16,7 +16,7 @@ puzzle = crossword_tools.Puzzle()
 # TODO: account for incorrect input, and allow re-starting and stuff
 # TODO: follow the actual crossword format, with the same number having across
 # and down values
-def configure_puzzle():
+def main():
     def on_puzzle_retrieval(puzzle):
         print(constants.PRINTING_PUZZLE)
         crossword_tools.print_puzzle(puzzle)
@@ -30,7 +30,7 @@ def configure_puzzle():
         solutions = solver.solve(puzzle, word_bank)
         
         if solutions:
-            crossword_gui.print_puzzle(puzzle, solutions)
+            crossword_gui.display_puzzle_solutions(puzzle, solutions, lambda: main())
         else:
             print("No solutions found")
     
@@ -40,8 +40,5 @@ def configure_puzzle():
 
 def read_int(message):
     return int(input(message))
-
-def main():
-    configure_puzzle()
 
 main();
