@@ -67,6 +67,7 @@ def main():
     
     width = read_int(constants.PUZZLE_WIDTH_STR)
     height = read_int(constants.PUZZLE_HEIGHT_STR)
+    print(constants.DRAW_PUZZLE_STR)
     crossword_gui.get_user_generated_crossword(width, height, on_puzzle_retrieval)
 
 def read_int(message):

@@ -11,11 +11,11 @@ def get_user_generated_crossword(canvas_width, canvas_height, callback):
             if btn.selected:
                 btn.selected = False
                 selected_tile_map.set_val(c, r, False)
-                btn.configure(background="grey")
+                btn.configure(background="grey", activebackground="grey")
             else:
                 btn.selected = True
                 selected_tile_map.set_val(c, r, True)
-                btn.configure(background="blue")
+                btn.configure(background="white", activebackground="white")
         return lambda: fn()
 
     def on_enter_click(root):
@@ -24,11 +24,9 @@ def get_user_generated_crossword(canvas_width, canvas_height, callback):
         
     root = tkinter.Tk()
     for r in range(canvas_height):
-        root.rowconfigure(r, minsize="30")
         for c in range(canvas_width):
-            if r == 0:
-                root.columnconfigure(c, minsize="30")
-            btn = tkinter.Button(root, borderwidth=1, background="grey")
+            btn = tkinter.Button(root, borderwidth=1, height="2", width="2",
+                                 background="grey", activebackground="grey")
             btn.selected = False
             selected_tile_map.set_val(c, r, False)
             btn.configure(command=on_button_click(btn, r, c))
@@ -141,9 +139,9 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_clos
             for y in range(len(grid_tiles[x])):
                 char_at_tile = coordmap.get_val(x - BORDER_WIDTH, y - BORDER_WIDTH)
                 if char_at_tile:
-                    grid_tiles[x][y].configure(text=char_at_tile)
+                    grid_tiles[x][y].configure(text=char_at_tile, background="white", activebackground="white")
                 else:
-                    grid_tiles[x][y].configure(text="")
+                    grid_tiles[x][y].configure(text=" ", background="grey", activebackground="grey")
     
     def next_page(root, next_page_btn, prev_page_btn):
         if root.current_page + 1 >= num_coordmaps:
@@ -182,13 +180,14 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_clos
     root.current_page = 0
     for x in range(grid_width):
         grid_tiles.append([])
-        root.columnconfigure(x, minsize="30")
         for y in range(grid_height):
-            if x == 0:
-                root.rowconfigure(y, minsize="30")
-            btn = tkinter.Label(root, borderwidth=1, font=("Helvetica", 15))
-            grid_tiles[x].append(btn)
-            btn.grid(row=y, column=x)
+            # using a button here because tkinter is bad at formatting labels
+            tile = tkinter.Button(root, borderwidth=1, height="2", width="2", 
+                                  background="grey", activebackground="grey", 
+                                  disabledforeground="black",
+                                  state=tkinter.DISABLED, font=("Monospace", 12))
+            grid_tiles[x].append(tile)
+            tile.grid(row=y, column=x)
 
     if len(coordmaps) <= 1:
         next_btn_state = tkinter.DISABLED
