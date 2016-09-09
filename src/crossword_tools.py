@@ -80,7 +80,6 @@ def print_coord_map(coordmap, border, empty_char):
     maxx = maxx - minx
     maxy = maxy - miny
     
-    print("maxx and maxy are " + str(maxx) + ", " + str(maxy))
     for y in range(maxy + 1 + 2 * border):
         for x in range(maxx + 1 + 2 * border):
             if (x < border or y < border or 
@@ -167,6 +166,12 @@ class CoordMap(object):
             elif direction == DIR_DOWN:
                 self.set_val(x, y + i, values[i])
     
+    def overlay_coordmap(self, coordmap, xoffset, yoffset):
+        new_coords = coordmap.get_filled_coords()
+        
+        for coord in new_coords:
+            self.set_val(coord.x + xoffset, coord.y + yoffset, coordmap.get_val(coord.x, coord.y))
+    
     def get_val(self, x, y):
         x = x - self._x_shift
         y = y - self._y_shift
@@ -174,6 +179,17 @@ class CoordMap(object):
             return self._coord_map[x][y]
         else:
             return None
+    
+    def get_filled_coords(self):
+        xcoords = list(self._coord_map.keys())
+        coords = []
+        for xindex in range(len(xcoords)):
+            x = xcoords[xindex]
+            ycoords = list(self._coord_map[x].keys())
+            for yindex in range(len(ycoords)):
+                y = ycoords[yindex]
+                coords.append(CoordMap.Coord(x + self._x_shift, y + self._y_shift))
+        return coords
     
     def get_min_x(self):
         keys = self._coord_map.keys()
@@ -218,3 +234,8 @@ class CoordMap(object):
     
     def shift_y(self, shift):
         self._y_shift = self._y_shift + shift
+        
+    class Coord:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
