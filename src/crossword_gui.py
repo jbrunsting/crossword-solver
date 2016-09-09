@@ -112,37 +112,35 @@ def generate_puzzle_from_selected_tile_map(coordmap):
                 # if they intersect
                 if x2 <= x and x2 + length2 > x and y <= y2 and y + length > y2:
                     intersect = crossword_tools.Puzzle.IntersectionPoint(i, i2, y2 - y, x - x2)
-                    print("adding intersection at " + str(y2 - y) + " and " +  str(x - x2))
                     intersections.append(intersect)
             # this implies that row2 has direction down
             elif dir == crossword_tools.Puzzle.LINE_DIR_RIGHT:
                 # if they intersect
                 if x <= x2 and x + length > x2 and y2 <= y and y2 + length2 > y:
-                    print("adding intersection at " + str(x2 - x) + " and " +  str(y - y2))
                     intersect = crossword_tools.Puzzle.IntersectionPoint(i, i2, x2 - x, y - y2)
                     intersections.append(intersect)
         
-        print("adding word with length " + str(length) + " and id " + str(i))
         puzzle.add_line(length, dir, intersections, i)
      
     return puzzle    
 
 def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height):
-    MIN_WIDTH = 6
+    MIN_WIDTH = 4
     BORDER_WIDTH = 1
     
-    grid_width = max(max_map_width, MIN_WIDTH) + 2 * BORDER_WIDTH
+    grid_width = max(max_map_width + 2 * BORDER_WIDTH, MIN_WIDTH)
     grid_height = max_map_height + 2 * BORDER_WIDTH
     num_coordmaps = len(coordmaps)
+    grid_tiles = []
     
     def display_coordmap(root, coordmap):        
-        for x in range(len(root.grid_tiles)):
-            for y in range(len(root.grid_tiles[x])):
+        for x in range(len(grid_tiles)):
+            for y in range(len(grid_tiles[x])):
                 char_at_tile = coordmap.get_val(x - BORDER_WIDTH, y - BORDER_WIDTH)
                 if char_at_tile:
-                    root.grid_tiles[x][y].configure(text=char_at_tile)
+                    grid_tiles[x][y].configure(text=char_at_tile)
                 else:
-                    root.grid_tiles[x][y].configure(text="")
+                    grid_tiles[x][y].configure(text="")
     
     def next_page(root, next_page_btn, prev_page_btn):
         if root.current_page + 1 >= num_coordmaps:
@@ -175,13 +173,11 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height):
     # not sure if this is a good way of passing the values into the click
     # functions, consider improving
     root.current_page = 0
-    root.coordmaps = coordmaps
-    root.grid_tiles = []
-    for x in range(grid_height):
-        root.grid_tiles.append([])
-        for y in range(grid_width):
+    for x in range(grid_width):
+        grid_tiles.append([])
+        for y in range(grid_height):
             btn = tkinter.Button(root, borderwidth=1, background="grey")
-            root.grid_tiles[x].append(btn)
+            grid_tiles[x].append(btn)
             btn.grid(row=y,column=x)
 
     if len(coordmaps) == 0:
@@ -195,8 +191,8 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height):
     next_btn.configure(command = lambda: next_page(root, next_btn, prev_btn))
     prev_btn.configure(command = lambda: prev_page(root, next_btn, prev_btn))
     
-    next_btn.grid(row=(grid_height), column=0, columnspan=2)
-    prev_btn.grid(row=(grid_width), column=grid_width - 3, columnspan=2)
+    next_btn.grid(row=(grid_height), column=grid_width - 2, columnspan=2)
+    prev_btn.grid(row=(grid_height), column=0, columnspan=2)
     
     display_coordmap(root, coordmaps[0])
     root.mainloop()
@@ -218,6 +214,11 @@ def print_puzzle(puzzle, solution_set):
             solution_coord_map.overlay_coordmap(line_and_decendant_maps[i], coordmap_y, 0)
             
         coordmap_y = line_and_decendant_maps[0].get_max_y() + 2
+        
+    for coord_map in solution_coord_maps:
+        coord_map.shift_x(-coord_map.get_min_x())
+        coord_map.shift_y(-coord_map.get_min_y())
+    
     display_coordmaps_on_pages(solution_coord_maps, solution_coord_maps[0].get_max_x() + 1, solution_coord_maps[0].get_max_y() + 1)
     
 
