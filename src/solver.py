@@ -18,7 +18,6 @@ def solve(puzzle, word_bank):
     
     for line_id, line in puzzle.lines.items():
         if line.length not in word_by_length:
-            print("there are no words of length " + str(line.length))
             return None
         fitting_words[line_id] = copy.copy(word_by_length[line.length])
         if fitting_words[line_id] == None:

@@ -24,7 +24,10 @@ def get_user_generated_crossword(canvas_width, canvas_height, callback):
         
     root = tkinter.Tk()
     for r in range(canvas_height):
+        root.rowconfigure(r, minsize="30")
         for c in range(canvas_width):
+            if r == 0:
+                root.columnconfigure(c, minsize="30")
             btn = tkinter.Button(root, borderwidth=1, background="grey")
             btn.selected = False
             selected_tile_map.set_val(c, r, False)
@@ -187,7 +190,7 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_clos
             grid_tiles[x].append(btn)
             btn.grid(row=y, column=x)
 
-    if len(coordmaps) == 0:
+    if len(coordmaps) <= 1:
         next_btn_state = tkinter.DISABLED
     else:
         next_btn_state = tkinter.NORMAL
@@ -208,70 +211,5 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_clos
 
 # position with the corresponding ID
 def display_puzzle_solutions(puzzle, solution_set, on_close):
-    solution_coord_maps = [crossword_tools.CoordMap() for i in range(len(solution_set))]
-    lines = copy.deepcopy(puzzle.lines)
-    if not lines:
-        return
-    
-    coordmap_y = 0
-    while lines.keys():
-        line_and_decendant_maps = [crossword_tools.CoordMap() for i in range(len(solution_set))]
-        current_key = list(lines.keys())[0]
-        lines = add_line_and_decendents_to_coordmap(line_and_decendant_maps, 0, 0, current_key, lines, solution_set)
-        
-        for i, solution_coord_map in enumerate(solution_coord_maps):
-            solution_coord_map.overlay_coordmap(line_and_decendant_maps[i], coordmap_y, 0)
-            
-        coordmap_y = line_and_decendant_maps[0].get_max_y() + 2
-        
-    for coord_map in solution_coord_maps:
-        coord_map.shift_x(-coord_map.get_min_x())
-        coord_map.shift_y(-coord_map.get_min_y())
-    
+    solution_coord_maps = crossword_tools.get_solution_coordmaps(puzzle, solution_set)
     display_coordmaps_on_pages(solution_coord_maps, solution_coord_maps[0].get_max_x() + 1, solution_coord_maps[0].get_max_y() + 1, on_close)
-    
-# returns the list of lines with the lines that were added removed
-# coordmaps is a list of CoordMaps with the same length as line_solutions_by_coordmap
-# line_solutions_by_coordmap is an array of dictionaries where the keys are the
-# id's of different lines in the coordmap, and the values are the word that goes
-# at that line
-def add_line_and_decendents_to_coordmap(coordmaps, x, y, line_id, lines, line_solutions_by_coordmap = None):    
-    line = lines[line_id]
-    
-    for i, coordmap in enumerate(coordmaps):
-        line_solutions = line_solutions_by_coordmap[i]
-        if line_solutions and line_id in line_solutions:
-            line_string = line_solutions[line_id]
-        else:
-            line_string = ['#' for x in range(line.length)]
-        coordmap.add_line(line.direction, x, y, line_string)
-    
-    line_intersection_points = line.intersection_points
-    line_direction = line.direction
-    del lines[line_id]
-    for intersection in line_intersection_points:
-        newline_x = x
-        newline_y = y
-        
-        if line_direction == crossword_tools.Puzzle.LINE_DIR_DOWN:
-            newline_y = newline_y + intersection.first_intersect
-        else:
-            newline_x = newline_x + intersection.first_intersect
-        
-        intersected_id = intersection.second_id
-        if intersected_id not in lines:
-            continue
-        
-        intersected_line = lines[intersected_id]
-        
-        if intersected_line == None:
-            continue
-        
-        if intersected_line.direction == crossword_tools.Puzzle.LINE_DIR_DOWN:
-            newline_y = newline_y - intersection.second_intersect
-        else:
-            newline_x = newline_x - intersection.second_intersect
-        
-        lines = add_line_and_decendents_to_coordmap(coordmaps, newline_x, newline_y, intersected_id, lines, line_solutions_by_coordmap)
-    
-    return lines
