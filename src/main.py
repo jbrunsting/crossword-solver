@@ -31,6 +31,8 @@ def configure_puzzle():
         
         print("done solving")
         if solutions:
+            for solution in solutions:
+                print("solution: " + str(solution))
             crossword_gui.print_puzzle(puzzle, solutions)
         else:
             print("NO SOLUTIONS FOUND")

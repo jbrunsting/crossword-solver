@@ -45,7 +45,7 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
     # function like we do with current_solution. It is just a shallow copy, so
     # it shouldn't be too terrible on memory or processing, although it is 
     # not ideal
-    new_fitting_words = copy.copy(fitting_words)
+    new_fitting_words = copy.deepcopy(fitting_words)
     
     # adjust the possible words for each blank to match the guess
     for intersect in guessed_line.intersection_points:
@@ -53,7 +53,8 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
         if intersect.second_id in current_solution:
             continue
         
-        for word in new_fitting_words[intersect.second_id]:
+        second_id_fitting_words = copy.copy(new_fitting_words[intersect.second_id])
+        for word in second_id_fitting_words:
             if not intersect.words_fit(guess, word):
                 new_fitting_words[intersect.second_id].remove(word)
                 
