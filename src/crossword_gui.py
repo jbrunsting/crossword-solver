@@ -1,6 +1,6 @@
 import crossword_tools
+import constants
 import tkinter
-import copy
 
 # callback must take a puzzle as an argument
 def display_crossword_generation_window(canvas_width, canvas_height, callback):
@@ -23,15 +23,33 @@ def display_crossword_generation_window(canvas_width, canvas_height, callback):
     selected_tile_map = crossword_tools.CoordMap()
 
     def on_button_click(btn, r, c):
+        """
+        Generates a lambda function that should be called when the button at
+        row r and column c is clicked.
+        
+        Args:
+            btn: The button that is having the lambda function set as its
+                 click action.
+            r: The row at which btn is placed in the grid.
+            c: The column at which btn is placed in the grid.
+        """
+        
+        # We have this inner function in here, instead of just making a
+        # lambda function where we set the button click action, because it
+        # makes the btn, r, and c values equal to their values at when the
+        # on_button_click function was called, instead of their current values,
+        # which would cause them to have the same value for all buttons.
         def fn():
             if btn.selected:
                 btn.selected = False
                 selected_tile_map.set_val(c, r, False)
-                btn.configure(background="grey", activebackground="grey")
+                btn.configure(background=constants.GUI_DESELECTED_TILE_COLOR, 
+                              activebackground=constants.GUI_DESELECTED_TILE_COLOR)
             else:
                 btn.selected = True
                 selected_tile_map.set_val(c, r, True)
-                btn.configure(background="white", activebackground="white")
+                btn.configure(background=constants.GUI_SELECTED_TILE_COLOR, 
+                              activebackground=constants.GUI_SELECTED_TILE_COLOR)
         return lambda: fn()
 
     def on_enter_click(root):
@@ -39,23 +57,29 @@ def display_crossword_generation_window(canvas_width, canvas_height, callback):
         callback(crossword_tools.generate_puzzle_from_selected_tile_map(selected_tile_map))
         
     root = tkinter.Tk()
+    
     for r in range(canvas_height):
         for c in range(canvas_width):
             btn = tkinter.Button(root, borderwidth=1, height="2", width="2",
-                                 background="grey", activebackground="grey")
+                                 background=constants.GUI_DESELECTED_TILE_COLOR, 
+                                 activebackground=constants.GUI_DESELECTED_TILE_COLOR)
             btn.selected = False
             selected_tile_map.set_val(c, r, False)
             btn.configure(command=on_button_click(btn, r, c))
             btn.grid(row=r,column=c)
-    enter = tkinter.Button(root, borderwidth=1, background="grey", text="enter",
-                         command=lambda: on_enter_click(root))
+            
+    enter = tkinter.Button(root, borderwidth=1, 
+                           background=constants.GUI_DESELECTED_TILE_COLOR, 
+                           text=constants.ENTER_BTN_TEXT,
+                           command=lambda: on_enter_click(root))
     enter.grid(row=(r + 1), column=0, columnspan=canvas_width)
+    
     root.mainloop()  
 
 def display_puzzle_solutions(puzzle, solution_set, new_puzzle):
     """
     Displays the solutions to the puzzle in a new window. Calls new_puzzle if
-    the user choses to create a new puzzle.
+    the user chooses to create a new puzzle.
     
     Args:
         puzzle: A crossword_tools.Puzzle object representing the puzzle that
@@ -68,7 +92,10 @@ def display_puzzle_solutions(puzzle, solution_set, new_puzzle):
     """
     
     solution_coord_maps = crossword_tools.get_puzzle_coordmaps(puzzle, solution_set)
-    display_coordmaps_on_pages(solution_coord_maps, solution_coord_maps[0].get_max_x() + 1, solution_coord_maps[0].get_max_y() + 1, new_puzzle)
+    display_coordmaps_on_pages(solution_coord_maps, 
+                               solution_coord_maps[0].get_max_x() + 1, 
+                               solution_coord_maps[0].get_max_y() + 1, 
+                               new_puzzle)
 
 def display_coordmaps_on_pages(coordmaps, grid_width, grid_height, new_puzzle):
     """
@@ -107,9 +134,13 @@ def display_coordmaps_on_pages(coordmaps, grid_width, grid_height, new_puzzle):
             for y in range(len(grid_tiles[x])):
                 char_at_tile = coordmap.get_val(x - BORDER_WIDTH, y - BORDER_WIDTH)
                 if char_at_tile:
-                    grid_tiles[x][y].configure(text=char_at_tile, background="white", activebackground="white")
+                    grid_tiles[x][y].configure(text=char_at_tile, 
+                                               background=constants.GUI_SELECTED_TILE_COLOR, 
+                                               activebackground=constants.GUI_SELECTED_TILE_COLOR)
                 else:
-                    grid_tiles[x][y].configure(text=" ", background="grey", activebackground="grey")
+                    grid_tiles[x][y].configure(text=" ", 
+                                               background=constants.GUI_DESELECTED_TILE_COLOR, 
+                                               activebackground=constants.GUI_DESELECTED_TILE_COLOR)
     
     def next_page(next_page_btn, prev_page_btn):
         """
@@ -166,12 +197,15 @@ def display_coordmaps_on_pages(coordmaps, grid_width, grid_height, new_puzzle):
         return
         
     root = tkinter.Tk()
+    
     for x in range(grid_width):
         grid_tiles.append([])
         for y in range(grid_height):
-            # using a button here because tkinter is bad at formatting labels
+            # Using a button here because tkinter is bad at formatting labels.
+            # Not super happy about it though.
             tile = tkinter.Button(root, borderwidth=1, height="2", width="2", 
-                                  background="grey", activebackground="grey", 
+                                  background=constants.GUI_DESELECTED_TILE_COLOR, 
+                                  activebackground=constants.GUI_DESELECTED_TILE_COLOR, 
                                   disabledforeground="black",
                                   state=tkinter.DISABLED, font=("Monospace", 12))
             grid_tiles[x].append(tile)
@@ -182,16 +216,27 @@ def display_coordmaps_on_pages(coordmaps, grid_width, grid_height, new_puzzle):
     else:
         next_btn_state = tkinter.NORMAL
         
-    next_btn = tkinter.Button(borderwidth=1, background="grey", text=">", state=next_btn_state)
-    prev_btn = tkinter.Button(borderwidth=1, background="grey", text="<", state=tkinter.DISABLED)
-    retry_btn = tkinter.Button(borderwidth=1, background="grey", text="new puzzle", command=new_puzzle)
+    next_btn = tkinter.Button(borderwidth=1, 
+                              background=constants.GUI_DESELECTED_TILE_COLOR, 
+                              text=constants.RIGHT_BTN_TEXT, 
+                              state=next_btn_state)
+    prev_btn = tkinter.Button(borderwidth=1, 
+                              background=constants.GUI_DESELECTED_TILE_COLOR, 
+                              text=constants.LEFT_BTN_TEXT, 
+                              state=tkinter.DISABLED)
+    retry_btn = tkinter.Button(borderwidth=1, 
+                               background=constants.GUI_DESELECTED_TILE_COLOR, 
+                               text=constants.NEW_PUZZLE_BTN_TEXT, 
+                               command=new_puzzle)
     
     next_btn.configure(command=lambda: next_page(next_btn, prev_btn))
     prev_btn.configure(command=lambda: prev_page(next_btn, prev_btn))
     
     next_btn.grid(row=grid_height, column=grid_width - 2, columnspan=2)
     prev_btn.grid(row=grid_height, column=0, columnspan=2)
-    retry_btn.grid(row=grid_height, column=int(grid_width / 2 - 1), columnspan = 2 + grid_width % 2)
+    retry_btn.grid(row=grid_height, column=int(grid_width / 2 - 1), 
+                   columnspan = 2 + grid_width % 2)
     
     display_coordmap(coordmaps[0])
+    
     root.mainloop()

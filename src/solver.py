@@ -19,13 +19,16 @@ def solve(puzzle, word_bank):
     word_by_length = {}
     solution_set = []
     
+    # First, we make a dictionary mapping a length to a list of words from the
+    # word bank with that length
     for word in word_bank:
         length = len(word)
         if length not in word_by_length:
             word_by_length[length] = []
         word_by_length[length].append(word)
     
-    
+    # Next, we find the length of each line and take the list of words that can
+    # fit there from the word_by_length dictionary
     for line_id, line in puzzle.lines.items():
         if line.length not in word_by_length:
             return None
@@ -37,6 +40,9 @@ def solve(puzzle, word_bank):
     if not keylist:
         return None
     
+    # Finally, we pass in the information we have generated to the 
+    # find_solutions function, which will modify solution_set to contain all of
+    # the solutions to the puzzle, so it can be returned to the user.
     find_solutions(puzzle, fitting_words, solution_set)
     
     return solution_set
@@ -91,15 +97,14 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
     
     current_solution[line_id] = guess
     guessed_line = puzzle.lines[line_id]
-    # we copy this so that we don't have to reset the lists at the end of the 
-    # function like we do with current_solution. Its not ideal, but its
-    # better than recording all the changes we do to it and then reappplying
-    # them.
+    # We copy new_fitting_words so that we can remove words from it without
+    # modifying the fitting_words list in other solution branches.
     new_fitting_words = copy.deepcopy(fitting_words)
     
-    # adjust the possible words for each blank to match the guess
+    # Remove all words from the new_fitting_words list that don't fit with the
+    # new guess.
     for intersect in guessed_line.intersection_points:
-        # if the spot is filled, don't bother eliminating possibilities
+        # If the spot is filled, don't bother doing any calculations
         if intersect.second_id in current_solution:
             continue
         
@@ -116,7 +121,9 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
     all_ids = puzzle.lines.keys()
     possible_ids = [x for x in all_ids if x not in solved_ids]
     
-    # if there are no more id's to check, meaning everything has been filled
+    # If there are no more id's to guess, meaning all of the lines have been
+    # filled in, we have found a solution, so we add it to the current_solutions
+    # list.
     if not possible_ids:
         solution_set.append(copy.copy(current_solution))
         del current_solution[line_id]
@@ -128,9 +135,9 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
         if possible_word not in current_solution.values():
             guess_word(puzzle, target_id, possible_word, new_fitting_words, current_solution, solution_set)
     
-    # it is important to reset this value, so that after we have guessed, we are
-    # able to guess different values without the parent functions getting all
-    # mad and stuff cause they think the spot is already filled
+    # It is important to remove the guess from the current_solutions list after
+    # we are done with it so that it is not still there when we are attempting
+    # to start a new search branch.
     del current_solution[line_id]
 
 def get_optimal_guess_line(id_list, fitting_words):

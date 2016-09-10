@@ -73,7 +73,8 @@ def main():
     width = read_int(constants.PUZZLE_WIDTH_STR, 2)
     height = read_int(constants.PUZZLE_HEIGHT_STR, 2)
     print(constants.DRAW_PUZZLE_STR)
-    crossword_gui.display_crossword_generation_window(width, height, on_puzzle_retrieval)
+    crossword_gui.display_crossword_generation_window(width, height, 
+                                                      on_puzzle_retrieval)
 
 def read_int(message, min_val):
     """

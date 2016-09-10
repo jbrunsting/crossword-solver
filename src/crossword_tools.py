@@ -73,7 +73,8 @@ class Puzzle(object):
                               occurs
         """
         
-        def __init__(self, first_id, second_id, first_intersect, second_intersect):
+        def __init__(self, first_id, second_id, first_intersect, 
+                     second_intersect):
             self.first_id = first_id
             self.second_id = second_id
             self.first_intersect = first_intersect
@@ -376,6 +377,9 @@ def get_puzzle_coordmaps(puzzle, solution_set = None):
                       dictionaries describing solutions to the provided puzzle,
                       where each dictionary maps the id of each of the lines in
                       the provided Puzzle to a word that goes in that line.
+    Returns:
+        A list of CoordMap's containing the mappings required to display the
+        provided solutions to the puzzle.
     """
     
     if solution_set:
@@ -383,34 +387,49 @@ def get_puzzle_coordmaps(puzzle, solution_set = None):
     else:
         num_solution_coord_maps = 1
     
+    # This list contains the CoordMap's that will eventually be returned to the
+    # caller.
     solution_coord_maps = [CoordMap() for i in range(num_solution_coord_maps)]
+    
     lines = copy.deepcopy(puzzle.lines)
     if not lines:
         return
     
     overlay_x_shift = 0
+    
+    # Continually take a key from the lines list, and add it, and its
+    # descendants, to the CoordMap's, until all of the lines have been added.
     while lines.keys():
-        line_and_decendant_maps = [CoordMap() for i in range(num_solution_coord_maps)]
+        # First, we get a list of blank CoordMap's, and pick a random line to
+        # insert into them, along with its descendants (lines that are
+        # connected to it through intersection points).
+        line_and_descendant_maps = [CoordMap() for i in range(num_solution_coord_maps)]
         current_key = list(lines.keys())[0]
-        lines = add_line_and_decendents_to_coordmaps(line_and_decendant_maps, 0, 0, current_key, lines, solution_set)
+        lines = add_line_and_descendants_to_coordmaps(line_and_descendant_maps, 0, 0, current_key, lines, solution_set)
         
+        # Next, we take every CoordMap that was generated, shift it so that all
+        # of its elements are at coordinates greater than (0, 0), and then 
+        # combine them with the master CoordMap, ensuring they do not overlap
+        # by shifting the overlay right by overlay_x_shift
         for i, solution_coord_map in enumerate(solution_coord_maps):
-            overlay_map = line_and_decendant_maps[i]
+            overlay_map = line_and_descendant_maps[i]
             overlay_map.shift_x(-overlay_map.get_min_x())
             overlay_map.shift_y(-overlay_map.get_min_y())
             solution_coord_map.overlay_coordmap(overlay_map, overlay_x_shift, 0)
             
         overlay_x_shift = solution_coord_map.get_max_x() + 2
-        
+    
+    # Before returning the CoordMaps to the user, we shift them so that they 
+    # have all their coordinates greater than (0, 0)
     for coord_map in solution_coord_maps:
         coord_map.shift_x(-coord_map.get_min_x())
         coord_map.shift_y(-coord_map.get_min_y())
     
     return solution_coord_maps
     
-def add_line_and_decendents_to_coordmaps(coordmaps, x, y, line_id, lines, line_solutions_by_coordmap):
+def add_line_and_descendants_to_coordmaps(coordmaps, x, y, line_id, lines, line_solutions_by_coordmap):
     """
-    Recursively adds the lines in the lines list to the CoordMap's in the 
+    Recursively adds the lines in the lines list to the CoordMaps in the 
     coordmaps list, using line_solutions_by_cooordmap to determine what 
     characters to put in each line. It may not end up adding all of the lines
     in the lines list, because it uses the intersection points of each line to
@@ -420,7 +439,7 @@ def add_line_and_decendents_to_coordmaps(coordmaps, x, y, line_id, lines, line_s
     don't have to run this entire algorithm for every CoordMap.
     
     Args:
-        coordmaps: A list of unfilled CoordMap's that will be filled from the
+        coordmaps: A list of unfilled CoordMaps that will be filled from the
                    strings in line_solutions_by_coordmap.
         x: The x coordinate the line with in line_id should start at
         y: The y coordinate the line with id line_id should start at
@@ -438,11 +457,14 @@ def add_line_and_decendents_to_coordmaps(coordmaps, x, y, line_id, lines, line_s
     
     Returns:
         The lines array with all of the lines that have been added to the
-        CoordMap's in the coordmaps list removed.
+        CoordMaps in the coordmaps list removed.
     """
     
     line = lines[line_id]
     
+    # Add the line specified by line_id to the CoordMaps. The ith CoordMap is
+    # filled with the string in the ith dictionary in line_solutions_by_
+    # coordmap, if it exists, or with filler characters, if it does not.
     for i, coordmap in enumerate(coordmaps):
         line_solutions = None
         if line_solutions_by_coordmap:
@@ -455,9 +477,15 @@ def add_line_and_decendents_to_coordmaps(coordmaps, x, y, line_id, lines, line_s
             
         coordmap.add_line(line.direction, x, y, line_string)
     
+    # Since we have added the line to the CoordMaps, we no longer want it in the
+    # lines list, because we don't want to add it twice and cause infinite
+    # loops.
     line_intersection_points = line.intersection_points
     line_direction = line.direction
     del lines[line_id]
+    
+    # For every intersection point, try to add the intersected line to the 
+    # CoordMaps, if it has not already been added.
     for intersection in line_intersection_points:
         newline_x = x
         newline_y = y
@@ -481,7 +509,7 @@ def add_line_and_decendents_to_coordmaps(coordmaps, x, y, line_id, lines, line_s
         else:
             newline_x = newline_x - intersection.second_intersect
         
-        lines = add_line_and_decendents_to_coordmaps(coordmaps, newline_x, newline_y, intersected_id, lines, line_solutions_by_coordmap)
+        lines = add_line_and_descendants_to_coordmaps(coordmaps, newline_x, newline_y, intersected_id, lines, line_solutions_by_coordmap)
     
     return lines
 
