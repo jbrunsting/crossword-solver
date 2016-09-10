@@ -52,7 +52,6 @@ def display_crossword_generation_window(canvas_width, canvas_height, callback):
     enter.grid(row=(r + 1), column=0, columnspan=canvas_width)
     root.mainloop()  
 
-# position with the corresponding ID
 def display_puzzle_solutions(puzzle, solution_set, new_puzzle):
     """
     Displays the solutions to the puzzle in a new window. Calls new_puzzle if

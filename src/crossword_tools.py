@@ -138,7 +138,7 @@ class CoordMap(object):
             values: An array of the values that are going to be mapped to 
                     coordinates in the line.
         """
-        
+        print("Adding line to coordmap at " + str(x) + ", " + str(y) + " with length " + str(len(values)))
         x = x - self._x_shift
         y = y - self._y_shift
         
@@ -316,6 +316,9 @@ def print_coord_map(coordmap, border):
                 where the CoordMap is being printed
     """
     
+    if not coordmap:
+        return
+    
     minx = coordmap.get_min_x()
     miny = coordmap.get_min_y()
     maxx = coordmap.get_max_x()
@@ -356,7 +359,11 @@ def get_empty_puzzle_coordmap(puzzle):
         coordinates to either a space character, or a filler character.
     """
     
-    return get_puzzle_coordmaps(puzzle)[0]
+    coordmaps = get_puzzle_coordmaps(puzzle)
+    if coordmaps:
+        return coordmaps[0]
+    else:
+        return None
 
 def get_puzzle_coordmaps(puzzle, solution_set = None):
     """
@@ -386,7 +393,7 @@ def get_puzzle_coordmaps(puzzle, solution_set = None):
     while lines.keys():
         line_and_decendant_maps = [CoordMap() for i in range(num_solution_coord_maps)]
         current_key = list(lines.keys())[0]
-        lines = add_line_and_decendents_to_coordmaps(line_and_decendant_maps, current_key, lines, solution_set)
+        lines = add_line_and_decendents_to_coordmaps(line_and_decendant_maps, 0, 0, current_key, lines, solution_set)
         
         for i, solution_coord_map in enumerate(solution_coord_maps):
             overlay_map = line_and_decendant_maps[i]
@@ -402,7 +409,7 @@ def get_puzzle_coordmaps(puzzle, solution_set = None):
     
     return solution_coord_maps
     
-def add_line_and_decendents_to_coordmaps(coordmaps, line_id, lines, line_solutions_by_coordmap):
+def add_line_and_decendents_to_coordmaps(coordmaps, x, y, line_id, lines, line_solutions_by_coordmap):
     """
     Recursively adds the lines in the lines list to the CoordMap's in the 
     coordmaps list, using line_solutions_by_cooordmap to determine what 
@@ -416,6 +423,8 @@ def add_line_and_decendents_to_coordmaps(coordmaps, line_id, lines, line_solutio
     Args:
         coordmaps: A list of unfilled CoordMap's that will be filled from the
                    strings in line_solutions_by_coordmap.
+        x: The x coordinate the line with in line_id should start at
+        y: The y coordinate the line with id line_id should start at
         line_id: The id of the line that should be added in next
         lines: A list of CrosswordLine objects that still have to be used to
                populate the coordmaps list.
@@ -443,18 +452,18 @@ def add_line_and_decendents_to_coordmaps(coordmaps, line_id, lines, line_solutio
         if line_solutions and line_id in line_solutions:
             line_string = line_solutions[line_id]
         else:
-            line_string = [FILLER_CHAR for x in range(line.length)]
+            line_string = [FILLER_CHAR for i in range(line.length)]
             
-        coordmap.add_line(line.direction, 0, 0, line_string)
+        coordmap.add_line(line.direction, x, y, line_string)
     
     line_intersection_points = line.intersection_points
     line_direction = line.direction
     del lines[line_id]
     for intersection in line_intersection_points:
-        newline_x = 0
-        newline_y = 0
+        newline_x = x
+        newline_y = y
         
-        if line_direction == Puzzle.LINE_DIR_DOWN:
+        if line_direction == DIR_DOWN:
             newline_y = newline_y + intersection.first_intersect
         else:
             newline_x = newline_x + intersection.first_intersect
@@ -468,7 +477,7 @@ def add_line_and_decendents_to_coordmaps(coordmaps, line_id, lines, line_solutio
         if intersected_line == None:
             continue
         
-        if intersected_line.direction == Puzzle.LINE_DIR_DOWN:
+        if intersected_line.direction == DIR_DOWN:
             newline_y = newline_y - intersection.second_intersect
         else:
             newline_x = newline_x - intersection.second_intersect
@@ -562,13 +571,13 @@ def generate_puzzle_from_selected_tile_map(coordmap):
             length2 = row2[2]
             
             # this implies that row2 has direction right
-            if dir == Puzzle.LINE_DIR_DOWN:
+            if dir == DIR_DOWN:
                 # if they intersect
                 if x2 <= x and x2 + length2 > x and y <= y2 and y + length > y2:
                     intersect = Puzzle.IntersectionPoint(i, i2, y2 - y, x - x2)
                     intersections.append(intersect)
             # this implies that row2 has direction down
-            elif dir == Puzzle.LINE_DIR_RIGHT:
+            elif dir == DIR_RIGHT:
                 # if they intersect
                 if x <= x2 and x + length > x2 and y2 <= y and y2 + length2 > y:
                     intersect = Puzzle.IntersectionPoint(i, i2, x2 - x, y - y2)

@@ -10,13 +10,8 @@ import crossword_gui
 import solver
 import time
 
-# Yea, your gonna have to improve these alot
-
 puzzle = crossword_tools.Puzzle()
 
-# TODO: account for incorrect input, and allow re-starting and stuff
-# TODO: follow the actual crossword format, with the same number having across
-# and down values
 def main():
     def on_puzzle_retrieval(puzzle):
         """
@@ -64,8 +59,8 @@ def main():
         else:
             mills_ending = 's'
             
-        print(constants.SOLVE_TIME_STR.format(seconds, seconds_ending, 
-                                              mills, mills_ending))
+        print(constants.SOLVE_TIME_STR.format(seconds, seconds_ending, mills, 
+                                              mills_ending))
         
         if solutions:
             print(constants.DISPLAYING_SOLUTIONS_STR)
@@ -75,12 +70,12 @@ def main():
             if user_input == 'y':
                 main()
     
-    width = read_int(constants.PUZZLE_WIDTH_STR)
-    height = read_int(constants.PUZZLE_HEIGHT_STR)
+    width = read_int(constants.PUZZLE_WIDTH_STR, 2)
+    height = read_int(constants.PUZZLE_HEIGHT_STR, 2)
     print(constants.DRAW_PUZZLE_STR)
     crossword_gui.display_crossword_generation_window(width, height, on_puzzle_retrieval)
 
-def read_int(message):
+def read_int(message, min_val):
     """
     Reads an integer from the user, prompting the user with the provided 
     message. Continually gives an error message and prompts the user with the
@@ -95,7 +90,11 @@ def read_int(message):
     while True:
         try:
             int_input = int(input(message))
-            return int_input
+            
+            if int_input >= min_val:
+                return int_input
+            else:
+                print(constants.TOO_LOW_INPUT_STR.format(min_val))
         except ValueError:
             print(constants.IMPROPER_INPUT_STR)
 
