@@ -1,10 +1,20 @@
-import crossword_tools
 import copy
 
-# word_bank is a list of strings
-# returns a list of dictionaries, where the keys of the dictionary are the line
-# id's, and the values are the different words that fill in the crossword
 def solve(puzzle, word_bank):
+    """
+    Solves the provided crossword puzzle using words from the word bank.
+    
+    Args:
+        puzzle: A crossword_tools.Puzzle object.
+        word_bank: A list of strings.
+    
+    Returns:
+        A list of dictionaries, where each dictionary is a solution to the
+        puzzle, mapping every line id in the puzzle to a word from the word 
+        bank. None is returned if a solution could not be found.
+        found.
+    """
+    
     fitting_words = {}
     word_by_length = {}
     solution_set = []
@@ -27,23 +37,64 @@ def solve(puzzle, word_bank):
     if not keylist:
         return None
     
+    find_solutions(puzzle, fitting_words, solution_set)
+    
+    return solution_set
+
+def find_solutions(puzzle, fitting_words, solution_set):
+    """
+    Fills solution_set with all of the possible solutions to the puzzle, based
+    on the words from fitting_words, where each solution is a dictionary mapping
+    a key from puzzle to a word from fitting_words.
+    
+    Args:
+        puzzle: The puzzle being solved.
+        fitting_words: A dictionary mapping every line id in puzzle to a list of
+                       words that are the right size to fit in that line.
+        solution_set: An empty list that will be modified to contain multiple
+                      dictionaries, where each dictionary is a solution to the
+                      puzzle, mapping every line id to a word from 
+                      fitting_words.
+    """
+    
     initial_id = get_optimal_guess_line(list(puzzle.lines.keys()), fitting_words)
         
     current_solution = {}
     for possible_word in fitting_words[initial_id]:
         guess_word(puzzle, initial_id, possible_word, fitting_words, current_solution, solution_set)
-    
-    return solution_set
 
-# populates solution_set with all the possibilities that can be found without
-# removing anything from current_solution
 def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution_set):
+    """
+    Recursively attempts to fill in the lines not yet assigned in
+    current_solution with all possible words, as described by fitting_words, 
+    starting by attempting to fill the line with ID line_id with the word stored 
+    at guess. When current_solution is filled, meaning a solution has been 
+    found, the solution is added to solution_set.
+    
+    Args:
+        puzzle: The puzzle being solved.
+        line_id: The id (as stored in puzzle) of the line we are trying to fit
+                 a word into.
+        guess: The word we are trying to insert at line_id
+        fitting_words: a dictionary of arrays, where the dictionary has a key
+                       for every line id in puzzle, and the key maps to a list
+                       of all the words that could fit at that line, given the
+                       words that have already been filled in current_solution
+        current_solution: A dictionary of strings, where the dictionary has a 
+                          key for every line id in puzzle, and the key maps to
+                          the word that we are putting at that line in an
+                          attempt to find a solution
+        solution_set: A list containing all of the solutions that have been
+                      found so far, where each solution is a dictionary mapping
+                      every line id in puzzle to a word that goes in that line
+    """
+    
     current_solution[line_id] = guess
     guessed_line = puzzle.lines[line_id]
     # we copy this so that we don't have to reset the lists at the end of the 
-    # function like we do with current_solution. It is just a shallow copy, so
-    # it shouldn't be too terrible on memory or processing, although it is 
-    # not ideal
+    # function like we do with current_solution. Its not ideal, but its
+    # better than recording all the changes we do to it and then reappplying
+    # them.
     new_fitting_words = copy.deepcopy(fitting_words)
     
     # adjust the possible words for each blank to match the guess
@@ -81,8 +132,22 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
     # able to guess different values without the parent functions getting all
     # mad and stuff cause they think the spot is already filled
     del current_solution[line_id]
-    
+
 def get_optimal_guess_line(id_list, fitting_words):
+    """
+    Finds the id from id_list that maps to the smallest list of words in
+    fitting_words.
+    
+    Args:
+        id_list: A list of id's which are keys in fitting_words.
+        fitting_words: A dictionary with integer keys that map to lists of
+                       strings
+    
+    Returns:
+        The id in id_list that, of all the ids in the list, maps to the smallest
+        list in fitting_words
+    """
+    
     if not id_list:
         return None
     

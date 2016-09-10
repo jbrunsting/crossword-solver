@@ -3,7 +3,23 @@ import tkinter
 import copy
 
 # callback must take a puzzle as an argument
-def get_user_generated_crossword(canvas_width, canvas_height, callback):
+def display_crossword_generation_window(canvas_width, canvas_height, callback):
+    """
+    Displays a grid to the user which they can click to select different grid
+    tiles, forming a crossword puzzle. Calls the callback function with the 
+    puzzle formed by the tiles the user clicked.
+    
+    Args:
+        canvas_width: The width, in tiles, the crossword creation grid should 
+                      be.
+        canvas_height: The height, in tiles, the crossword creation grid should
+                       be.
+        callback: A function that takes a crossword_tools.Puzzle object as its
+                  only argument. This function will be called after the user
+                  designs their crossword puzzle, and will be created from the
+                  user input.
+    """
+    
     selected_tile_map = crossword_tools.CoordMap()
 
     def on_button_click(btn, r, c):
@@ -20,7 +36,7 @@ def get_user_generated_crossword(canvas_width, canvas_height, callback):
 
     def on_enter_click(root):
         root.destroy()
-        callback(generate_puzzle_from_selected_tile_map(selected_tile_map))
+        callback(crossword_tools.generate_puzzle_from_selected_tile_map(selected_tile_map))
         
     root = tkinter.Tk()
     for r in range(canvas_height):
@@ -34,107 +50,60 @@ def get_user_generated_crossword(canvas_width, canvas_height, callback):
     enter = tkinter.Button(root, borderwidth=1, background="grey", text="enter",
                          command=lambda: on_enter_click(root))
     enter.grid(row=(r + 1), column=0, columnspan=canvas_width)
-    root.mainloop()
-    
-def generate_puzzle_from_selected_tile_map(coordmap):
-    puzzle = crossword_tools.Puzzle()
-    rows = [] # list of tuples, each of the form (x, y, length, direction)
-    
-    width = coordmap.get_max_x() + 1
-    height = coordmap.get_max_y() + 1
+    root.mainloop()  
 
-    # TODO: Kill this repetition
-    # extract horizontal words
-    for y in range(height):
-        current_word_len = -1
-        starting_x = -1
-        starting_y = -1
-        for x in range(width):
-            if coordmap.get_val(x, y):
-                if current_word_len == -1:
-                    starting_x = x
-                    starting_y = y
-                    current_word_len = 1
-                else:
-                    current_word_len = current_word_len + 1
-            elif current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, crossword_tools.Puzzle.LINE_DIR_RIGHT))
-                current_word_len = -1
-            else:
-                current_word_len = -1
-        else:
-            if current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, crossword_tools.Puzzle.LINE_DIR_RIGHT))
-                current_word_len = -1
-            
+# position with the corresponding ID
+def display_puzzle_solutions(puzzle, solution_set, new_puzzle):
+    """
+    Displays the solutions to the puzzle in a new window. Calls new_puzzle if
+    the user choses to create a new puzzle.
     
-    # extract vertical words
-    for x in range(width):
-        current_word_len = -1
-        starting_x = -1
-        starting_y = -1
-        for y in range(height):
-            if coordmap.get_val(x, y):
-                if current_word_len == -1:
-                    starting_x = x
-                    starting_y = y
-                    current_word_len = 1
-                else:
-                    current_word_len = current_word_len + 1
-            elif current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, crossword_tools.Puzzle.LINE_DIR_DOWN))
-                current_word_len = -1
-            else:
-                current_word_len = -1
-        else:
-            if current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, crossword_tools.Puzzle.LINE_DIR_DOWN))
-                current_word_len = -1
+    Args:
+        puzzle: A crossword_tools.Puzzle object representing the puzzle that
+                was solved.
+        solution_set: A list of solutions to the puzzle, where each solution
+                      is a dictionary mapping every line id in the puzzle to
+                      a string that goes at that line.
+        new_puzzle: A function that takes no arguments, and restarts the puzzle
+                    creation process
+    """
     
-    for i, row in enumerate(rows):
-        line_id = i
-        x = row[0]
-        y = row[1]
-        length = row[2]
-        dir = row[3]
-        intersections = []
-        
-        # calculate all intersection points
-        for i2, row2 in enumerate(rows):
-            if i2 == i or row2[3] == row[3]:
-                continue
-            
-            x2 = row2[0]
-            y2 = row2[1]
-            length2 = row2[2]
-            
-            # this implies that row2 has direction right
-            if dir == crossword_tools.Puzzle.LINE_DIR_DOWN:
-                # if they intersect
-                if x2 <= x and x2 + length2 > x and y <= y2 and y + length > y2:
-                    intersect = crossword_tools.Puzzle.IntersectionPoint(i, i2, y2 - y, x - x2)
-                    intersections.append(intersect)
-            # this implies that row2 has direction down
-            elif dir == crossword_tools.Puzzle.LINE_DIR_RIGHT:
-                # if they intersect
-                if x <= x2 and x + length > x2 and y2 <= y and y2 + length2 > y:
-                    intersect = crossword_tools.Puzzle.IntersectionPoint(i, i2, x2 - x, y - y2)
-                    intersections.append(intersect)
-        
-        puzzle.add_line(length, dir, intersections, i)
-     
-    return puzzle    
+    solution_coord_maps = crossword_tools.get_puzzle_coordmaps(puzzle, solution_set)
+    display_coordmaps_on_pages(solution_coord_maps, solution_coord_maps[0].get_max_x() + 1, solution_coord_maps[0].get_max_y() + 1, new_puzzle)
 
-def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_close):
+def display_coordmaps_on_pages(coordmaps, grid_width, grid_height, new_puzzle):
+    """
+    Displays the values of each of the provided coordmaps on a page, where the
+    user can navigate through the pages using navigation buttons.
+    
+    Args:
+        coordmaps: A list of crossword_tools.CoordMap objects that are going to
+                   be displayed to the user
+        grid_width: The width, in tiles, the portion of the grid displaying
+                    the coordmaps must be in order to show all of them properly
+        grid_height: The height, in tiles, the portion of the grid displaying
+                     the coordmaps must be in order to show all of them properly
+    """
+    
     MIN_WIDTH = 6
     BORDER_WIDTH = 1
     
-    grid_width = max(max_map_width + 2 * BORDER_WIDTH, MIN_WIDTH)
-    grid_height = max_map_height + 2 * BORDER_WIDTH
+    grid_width = max(grid_width + 2 * BORDER_WIDTH, MIN_WIDTH)
+    grid_height = grid_height + 2 * BORDER_WIDTH
     num_coordmaps = len(coordmaps)
     grid_tiles = []
+    current_page = 0
     
-    def display_coordmap(root, coordmap):        
+    def display_coordmap(coordmap):
+        """
+        Modifies the tkinter elements stored in grid_tiles to display the
+        information stored in the provided coordmap.
+        
+        Args:
+            coordmap: A crossword_tools.CoordMap object that will be displayed
+                      to the user.
+        """
+        
         for x in range(len(grid_tiles)):
             for y in range(len(grid_tiles[x])):
                 char_at_tile = coordmap.get_val(x - BORDER_WIDTH, y - BORDER_WIDTH)
@@ -143,41 +112,61 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_clos
                 else:
                     grid_tiles[x][y].configure(text=" ", background="grey", activebackground="grey")
     
-    def next_page(root, next_page_btn, prev_page_btn):
-        if root.current_page + 1 >= num_coordmaps:
+    def next_page(next_page_btn, prev_page_btn):
+        """
+        Displays the CoordMap following the currently visible CoordMap in the
+        coordmaps list to the user.
+        
+        Args:
+            next_page_btn: The tkinter button for the next page button
+            prev_page_btn: The tkinter button for the previous page button
+        """
+        
+        nonlocal current_page
+        if current_page + 1 >= num_coordmaps:
             return
         
-        root.current_page = root.current_page + 1
-        if root.current_page + 1 >= num_coordmaps:
+        current_page = current_page + 1
+        if current_page + 1 >= num_coordmaps:
             next_page_btn.configure(state=tkinter.DISABLED)
         
         prev_page_btn.configure(state=tkinter.NORMAL)
         
-        display_coordmap(root, coordmaps[root.current_page])
+        display_coordmap(coordmaps[current_page])
         
-    def prev_page(root, next_page_btn, prev_page_btn):
-        if root.current_page <= 0:
+    def prev_page(next_page_btn, prev_page_btn):
+        """
+        Displays the CoordMap preceding the currently visible CoordMap in the
+        coordmaps list to the user.
+        
+        Args:
+            next_page_btn: The tkinter button for the next page button
+            prev_page_btn: The tkinter button for the previous page button
+        """
+        nonlocal current_page
+        if current_page <= 0:
             return
         
-        root.current_page = root.current_page - 1
-        if root.current_page <= 0:
+        current_page = current_page - 1
+        if current_page <= 0:
             prev_page_btn.configure(state=tkinter.DISABLED)
 
         next_page_btn.configure(state=tkinter.NORMAL)
             
-        display_coordmap(root, coordmaps[root.current_page])
+        display_coordmap(coordmaps[current_page])
     
     def new_puzzle():
+        """
+        Hides the current window and restarts the crossword generation process
+        """
+        
         root.destroy()
-        on_close()
+        new_puzzle()
     
     if not coordmaps:
         return
         
     root = tkinter.Tk()
-    # not sure if this is a good way of passing the values into the click
-    # functions, consider improving
-    root.current_page = 0
     for x in range(grid_width):
         grid_tiles.append([])
         for y in range(grid_height):
@@ -194,21 +183,16 @@ def display_coordmaps_on_pages(coordmaps, max_map_width, max_map_height, on_clos
     else:
         next_btn_state = tkinter.NORMAL
         
-    next_btn = tkinter.Button(root, borderwidth=1, background="grey", text=">", state=next_btn_state)
-    prev_btn = tkinter.Button(root, borderwidth=1, background="grey", text="<", state=tkinter.DISABLED)
-    retry_btn = tkinter.Button(root, borderwidth=1, background="grey", text="new puzzle", command=new_puzzle)
+    next_btn = tkinter.Button(borderwidth=1, background="grey", text=">", state=next_btn_state)
+    prev_btn = tkinter.Button(borderwidth=1, background="grey", text="<", state=tkinter.DISABLED)
+    retry_btn = tkinter.Button(borderwidth=1, background="grey", text="new puzzle", command=new_puzzle)
     
-    next_btn.configure(command=lambda: next_page(root, next_btn, prev_btn))
-    prev_btn.configure(command=lambda: prev_page(root, next_btn, prev_btn))
+    next_btn.configure(command=lambda: next_page(next_btn, prev_btn))
+    prev_btn.configure(command=lambda: prev_page(next_btn, prev_btn))
     
     next_btn.grid(row=grid_height, column=grid_width - 2, columnspan=2)
     prev_btn.grid(row=grid_height, column=0, columnspan=2)
     retry_btn.grid(row=grid_height, column=int(grid_width / 2 - 1), columnspan = 2 + grid_width % 2)
     
-    display_coordmap(root, coordmaps[0])
+    display_coordmap(coordmaps[0])
     root.mainloop()
-
-# position with the corresponding ID
-def display_puzzle_solutions(puzzle, solution_set, on_close):
-    solution_coord_maps = crossword_tools.get_solution_coordmaps(puzzle, solution_set)
-    display_coordmaps_on_pages(solution_coord_maps, solution_coord_maps[0].get_max_x() + 1, solution_coord_maps[0].get_max_y() + 1, on_close)

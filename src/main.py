@@ -19,6 +19,16 @@ puzzle = crossword_tools.Puzzle()
 # and down values
 def main():
     def on_puzzle_retrieval(puzzle):
+        """
+        Gets a word bank from the user, uses it to solve the provided puzzle,
+        and displays the results to the user. Should be called once the user
+        has finished generating the puzzle using the puzzle creation window
+        
+        args:
+            puzzle: A crossword_tools.Puzzle object representing the puzzle the
+                    user created
+        """
+        
         if not puzzle:
             user_input = input(constants.NO_SOLUTIONS_STR)
             if user_input == 'y':
@@ -68,9 +78,25 @@ def main():
     width = read_int(constants.PUZZLE_WIDTH_STR)
     height = read_int(constants.PUZZLE_HEIGHT_STR)
     print(constants.DRAW_PUZZLE_STR)
-    crossword_gui.get_user_generated_crossword(width, height, on_puzzle_retrieval)
+    crossword_gui.display_crossword_generation_window(width, height, on_puzzle_retrieval)
 
 def read_int(message):
-    return int(input(message))
+    """
+    Reads an integer from the user, prompting the user with the provided 
+    message. Continually gives an error message and prompts the user with the
+    provided message until they provide valid input, if they do not provide an 
+    integer input initially.
+    
+    args:
+        message: The message shown to the user to prompt them to input an
+                 integer.
+    """
+    
+    while True:
+        try:
+            int_input = int(input(message))
+            return int_input
+        except ValueError:
+            print(constants.IMPROPER_INPUT_STR)
 
 main();
