@@ -138,7 +138,6 @@ class CoordMap(object):
             values: An array of the values that are going to be mapped to 
                     coordinates in the line.
         """
-        print("Adding line to coordmap at " + str(x) + ", " + str(y) + " with length " + str(len(values)))
         x = x - self._x_shift
         y = y - self._y_shift
         
@@ -499,60 +498,69 @@ def generate_puzzle_from_selected_tile_map(coordmap):
                   not part of the crossword.
     """
     
-    puzzle = Puzzle()
     rows = [] # list of tuples, each of the form (x, y, length, direction)
     
-    width = coordmap.get_max_x() + 1
-    height = coordmap.get_max_y() + 1
-
-    # TODO: Kill this repetition
-    # extract horizontal words
-    for y in range(height):
-        current_word_len = -1
-        starting_x = -1
-        starting_y = -1
-        for x in range(width):
-            if coordmap.get_val(x, y):
-                if current_word_len == -1:
-                    starting_x = x
-                    starting_y = y
-                    current_word_len = 1
-                else:
-                    current_word_len = current_word_len + 1
-            elif current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, DIR_RIGHT))
-                current_word_len = -1
-            else:
-                current_word_len = -1
+    def find_lines(direction):
+        """
+        Finds the lines in the provided direction in the CoordMap provided by 
+        the parent function, and adds the row information to the rows array.
+        
+        Args:
+            direction: The direction of the lines being searched for, must be
+                       DIR_DOWN for up/down rows, and DIR_RIGHT for left/right
+                       ones.
+        """
+        
+        width = coordmap.get_max_x() + 1
+        height = coordmap.get_max_y() + 1
+        
+        # If we are searching for up/down lines, we want our primary range to 
+        # be the range of the x axis, because we want to take every coordinate
+        # column in the x, and look at all of the y subvalues to see if they
+        # form a line. It is the inverse for right/left lines.
+        if direction == DIR_DOWN:
+            primary_range = range(width)
+            sub_range = range(height)
         else:
-            if current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, DIR_RIGHT))
-                current_word_len = -1
-            
-    
-    # extract vertical words
-    for x in range(width):
-        current_word_len = -1
-        starting_x = -1
-        starting_y = -1
-        for y in range(height):
-            if coordmap.get_val(x, y):
-                if current_word_len == -1:
-                    starting_x = x
-                    starting_y = y
-                    current_word_len = 1
+            primary_range = range(height)
+            sub_range = range(width)
+        
+        for p in primary_range:
+            current_word_len = -1
+            starting_x = -1
+            starting_y = -1
+            for s in sub_range:
+                if direction == DIR_DOWN:
+                    x = p
+                    y = s
                 else:
-                    current_word_len = current_word_len + 1
-            elif current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, DIR_DOWN))
-                current_word_len = -1
+                    x = s
+                    y = p
+                
+                if coordmap.get_val(x, y):
+                    if current_word_len == -1:
+                        starting_x = x
+                        starting_y = y
+                        current_word_len = 1
+                    else:
+                        current_word_len = current_word_len + 1
+                elif current_word_len > 1:
+                    rows.append((starting_x, starting_y, current_word_len, direction))
+                    current_word_len = -1
+                else:
+                    current_word_len = -1
             else:
-                current_word_len = -1
-        else:
-            if current_word_len > 1:
-                rows.append((starting_x, starting_y, current_word_len, DIR_DOWN))
-                current_word_len = -1
+                if current_word_len > 1:
+                    rows.append((starting_x, starting_y, current_word_len, direction))
+                    current_word_len = -1
+        
+    find_lines(DIR_DOWN)
+    find_lines(DIR_RIGHT)
     
+    puzzle = Puzzle()
+    
+    # Calculate the intersection points of each row, and combine these points,
+    # and the row information, by adding it to the puzzle.
     for i, row in enumerate(rows):
         line_id = i
         x = row[0]
@@ -561,7 +569,7 @@ def generate_puzzle_from_selected_tile_map(coordmap):
         dir = row[3]
         intersections = []
         
-        # calculate all intersection points
+        # Check all other lines to see if they intersect with this one.
         for i2, row2 in enumerate(rows):
             if i2 == i or row2[3] == row[3]:
                 continue
@@ -570,15 +578,13 @@ def generate_puzzle_from_selected_tile_map(coordmap):
             y2 = row2[1]
             length2 = row2[2]
             
-            # this implies that row2 has direction right
-            if dir == DIR_DOWN:
-                # if they intersect
+            if dir == DIR_DOWN: # Implying row2 has direction right.
+                # If they intersect.
                 if x2 <= x and x2 + length2 > x and y <= y2 and y + length > y2:
                     intersect = Puzzle.IntersectionPoint(i, i2, y2 - y, x - x2)
                     intersections.append(intersect)
-            # this implies that row2 has direction down
-            elif dir == DIR_RIGHT:
-                # if they intersect
+            elif dir == DIR_RIGHT: # Implying row2 has direction down.
+                # If they intersect.
                 if x <= x2 and x + length > x2 and y2 <= y and y2 + length2 > y:
                     intersect = Puzzle.IntersectionPoint(i, i2, x2 - x, y - y2)
                     intersections.append(intersect)
