@@ -527,6 +527,10 @@ def generate_puzzle_from_selected_tile_map(coordmap):
     """
     
     rows = [] # list of tuples, each of the form (x, y, length, direction)
+    X_FIELD =  0;
+    Y_FIELD = 1;
+    LEN_FIELD = 2;
+    DIR_FIELD = 3;
     
     def find_lines(direction):
         """
@@ -591,32 +595,38 @@ def generate_puzzle_from_selected_tile_map(coordmap):
     # and the row information, by adding it to the puzzle.
     for i, row in enumerate(rows):
         line_id = i
-        x = row[0]
-        y = row[1]
-        length = row[2]
-        dir = row[3]
+        x = row[X_FIELD]
+        y = row[Y_FIELD]
+        length = row[LEN_FIELD]
+        dir = row[DIR_FIELD]
         intersections = []
+        
+        print("at row " + str(line_id) + " with x, y, len, dir " + str(x) + ", " + str(y) + ", " + str(length) + ", " + str(dir));
         
         # Check all other lines to see if they intersect with this one.
         for i2, row2 in enumerate(rows):
-            if i2 == i or row2[3] == row[3]:
+            c_line_id = i2;
+            c_x = row2[X_FIELD]
+            c_y = row2[Y_FIELD]
+            c_length = row2[LEN_FIELD]
+            c_dir = row2[DIR_FIELD];
+            # ensure that we are not trying to compare a row with itself, and
+            # don't bother finding the intersection of parallel lines
+            if line_id == c_line_id or dir == c_dir:
                 continue
             
-            x2 = row2[0]
-            y2 = row2[1]
-            length2 = row2[2]
             
-            if dir == DIR_DOWN: # Implying row2 has direction right.
-                # If they intersect.
-                if x2 <= x and x2 + length2 > x and y <= y2 and y + length > y2:
-                    intersect = Puzzle.IntersectionPoint(i, i2, y2 - y, x - x2)
+            if dir == DIR_DOWN: # Implying row2 has direction right
+                # If they intersect
+                if c_x <= x and c_x + c_length > x and y <= c_y and y + length > c_y:
+                    intersect = Puzzle.IntersectionPoint(line_id, c_line_id, c_y - y, x - c_x)
                     intersections.append(intersect)
-            elif dir == DIR_RIGHT: # Implying row2 has direction down.
-                # If they intersect.
-                if x <= x2 and x + length > x2 and y2 <= y and y2 + length2 > y:
-                    intersect = Puzzle.IntersectionPoint(i, i2, x2 - x, y - y2)
+            elif dir == DIR_RIGHT: # Implying row2 has direction down
+                # If they intersect
+                if x <= c_x and x + length > c_x and c_y <= y and c_y + c_length > y:
+                    intersect = Puzzle.IntersectionPoint(line_id, c_line_id, c_x - x, y - c_y)
                     intersections.append(intersect)
         
-        puzzle.add_line(length, dir, intersections, i)
+        puzzle.add_line(length, dir, intersections, line_id)
      
     return puzzle  
