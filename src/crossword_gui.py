@@ -185,7 +185,7 @@ def display_coordmaps_on_pages(coordmaps, grid_width, grid_height, new_puzzle):
             
         display_coordmap(coordmaps[current_page])
     
-    def new_puzzle():
+    def on_restart_button():
         """
         Hides the current window and restarts the crossword generation process
         """
@@ -227,7 +227,7 @@ def display_coordmaps_on_pages(coordmaps, grid_width, grid_height, new_puzzle):
     retry_btn = tkinter.Button(borderwidth=1, 
                                background=constants.GUI_DESELECTED_TILE_COLOR, 
                                text=constants.NEW_PUZZLE_BTN_TEXT, 
-                               command=new_puzzle)
+                               command=on_restart_button)
     
     next_btn.configure(command=lambda: next_page(next_btn, prev_btn))
     prev_btn.configure(command=lambda: prev_page(next_btn, prev_btn))

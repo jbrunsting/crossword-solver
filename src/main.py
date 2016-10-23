@@ -10,8 +10,6 @@ import crossword_gui
 import solver
 import time
 
-puzzle = crossword_tools.Puzzle()
-
 def main():
     def on_puzzle_retrieval(puzzle):
         """
