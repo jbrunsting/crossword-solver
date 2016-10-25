@@ -41,7 +41,7 @@ def on_puzzle_retrieval(puzzle):
     while True:
         word_count += 1
         user_input = input(constants.WORD_BANK_WORD_ENTRY_STR.format(word_count))
-        if user_input == "q":
+        if user_input == 'q':
             break
         word_bank.append(user_input)
     

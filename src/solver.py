@@ -67,9 +67,11 @@ def find_solutions(puzzle, fitting_words, solution_set):
         
     current_solution = {}
     for possible_word in fitting_words[initial_id]:
-        guess_word(puzzle, initial_id, possible_word, fitting_words, current_solution, solution_set)
+        guess_word(puzzle, initial_id, possible_word, fitting_words, 
+                   current_solution, solution_set)
 
-def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution_set):
+def guess_word(puzzle, line_id, guess, fitting_words, current_solution, 
+               solution_set):
     """
     Recursively attempts to fill in the lines not yet assigned in
     current_solution with all possible words, as described by fitting_words, 
@@ -133,7 +135,8 @@ def guess_word(puzzle, line_id, guess, fitting_words, current_solution, solution
     
     for possible_word in new_fitting_words[target_id]:
         if possible_word not in current_solution.values():
-            guess_word(puzzle, target_id, possible_word, new_fitting_words, current_solution, solution_set)
+            guess_word(puzzle, target_id, possible_word, new_fitting_words, 
+                       current_solution, solution_set)
     
     # It is important to remove the guess from the current_solutions list after
     # we are done with it so that it is not still there when we are attempting

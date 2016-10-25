@@ -164,7 +164,8 @@ class CoordMap(object):
         new_coords = coordmap.get_filled_coords()
         
         for coord in new_coords:
-            self.set_val(coord.x + xoffset, coord.y + yoffset, coordmap.get_val(coord.x, coord.y))
+            self.set_val(coord.x + xoffset, coord.y + yoffset, 
+                         coordmap.get_val(coord.x, coord.y))
     
     def get_val(self, x, y):
         """
@@ -201,7 +202,8 @@ class CoordMap(object):
             ycoords = list(self._coord_map[x].keys())
             for yindex in range(len(ycoords)):
                 y = ycoords[yindex]
-                coords.append(CoordMap.Coord(x + self._x_shift, y + self._y_shift))
+                coords.append(CoordMap.Coord(x + self._x_shift, 
+                                             y + self._y_shift))
         return coords
     
     def get_min_x(self):
@@ -405,7 +407,9 @@ def get_puzzle_coordmaps(puzzle, solution_set = None):
         # connected to it through intersection points).
         line_and_descendant_maps = [CoordMap() for i in range(num_solution_coord_maps)]
         current_key = list(lines.keys())[0]
-        lines = add_line_and_descendants_to_coordmaps(line_and_descendant_maps, 0, 0, current_key, lines, solution_set)
+        lines = add_line_and_descendants_to_coordmaps(line_and_descendant_maps, 
+                                                      0, 0, current_key, lines, 
+                                                      solution_set)
         
         # Next, we take every CoordMap that was generated, shift it so that all
         # of its elements are at coordinates greater than (0, 0), and then 
@@ -427,7 +431,8 @@ def get_puzzle_coordmaps(puzzle, solution_set = None):
     
     return solution_coord_maps
     
-def add_line_and_descendants_to_coordmaps(coordmaps, x, y, line_id, lines, line_solutions_by_coordmap):
+def add_line_and_descendants_to_coordmaps(coordmaps, x, y, line_id, lines, 
+                                          line_solutions_by_coordmap):
     """
     Recursively adds the lines in the lines list to the CoordMaps in the 
     coordmaps list, using line_solutions_by_cooordmap to determine what 
